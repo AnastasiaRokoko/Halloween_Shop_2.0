@@ -2,13 +2,30 @@ import React, { useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from './commonStyles';
+import i18n from './i18n';
+
 
 const { width, height } = Dimensions.get("window");
 
-const slides = [
+
+
+const OnBoarding = ({ navigation }) => {
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const[language,setLanguage]=useState( i18n.locale);
+
+const toggleLanguage=()=>{
+  const newLanguage=language==='ru'?'en':'ru';
+  i18n.locale=newLanguage;
+  setLanguage(newLanguage);
+};
+
+const slides= [
   {
     id: '1',
-    title: 'Добро\nпожаловать',
+    title:  i18n.t('title1'),
     image: require('./assets/картинка паучок.png'),
     decorations: [
       { source: require('./assets/украшение1.png'), style: styles.design1 },
@@ -18,14 +35,14 @@ const slides = [
       { source: require('./assets/украшение3.png'), style: styles.design3 },
       { source: require('./assets/слайдер.png'), style: styles.slider },
     ],
-    buttonText: 'Начать',
+    buttonText:  i18n.t('start'),
     layout: 'text-first',
   },
   {
     id: '2',
     
-    title: 'Начнем\nПутешествие',
-    subtitle: 'Умная, великолепная и стильная\nколлекция Изучите сейчас',
+    title:  i18n.t('title2'),
+    subtitle:  i18n.t('subtitle1'),
     image: require('./assets/другой паучок_2 1.png'),
     decorations: [
       { source: require('./assets/украшение 1.png'), style: styles.design5 },
@@ -33,29 +50,25 @@ const slides = [
       { source: require('./assets/украшение 2.png'), style: styles.design6 },
       { source: require('./assets/слайдер2.png'), style: styles.slider },
     ],
-    buttonText: 'Далее',
+    buttonText:  i18n.t('next'),
     layout: 'image-first',
   },
   {
     id: '3',
     
-    title: 'У Вас Есть Сила,\nЧтобы',
-    subtitle: 'Быть незабываемым, как редкий яркий\nцветок',
+    title:  i18n.t('title3'),
+    subtitle:  i18n.t('subtitle2'),
     image: require('./assets/другой паучок_3 1.png'),
     decorations: [
       { source: require('./assets/тень.png'), style: styles.shadow2 },
       { source: require('./assets/украшение3.png'), style: styles.design7 },
       { source: require('./assets/слайдер3.png'), style: styles.slider },
     ],
-    buttonText: 'Готово',
+    buttonText: i18n.t('done'),
     layout: 'image-first',
   }
 ];
 
-const OnBoarding = ({ navigation }) => {
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const handleViewableItemsChanged = useRef(({ viewableItems }) => {
     const index = viewableItems[0]?.index || 0;
@@ -96,11 +109,17 @@ const OnBoarding = ({ navigation }) => {
           <Animated.Image source={item.image} style={[styles.image_spider1, { opacity: fadeAnim }]} />
 
     );
+
+
   
     return (
       <LinearGradient colors={['#CC2828', '#150404']} style={{ width, height }}>
         <View style={styles.container}>
-  
+
+        <TouchableOpacity onPress={toggleLanguage} style={{ position: 'absolute', top: 40, right: 20 }}>
+  <Text style={{ color: '#fff', fontSize: 16 }}>{language === 'ru' ? 'ENG' : 'RU'}</Text>
+</TouchableOpacity>
+
           
         {isTextFirst ? (
     <>
@@ -144,6 +163,7 @@ const OnBoarding = ({ navigation }) => {
 
   return (
     <FlatList
+    key={language}
       data={slides}
       ref={flatListRef}
       keyExtractor={(item) => item.id}
