@@ -3,6 +3,9 @@ import { View, Text, Image, TouchableOpacity, FlatList, Animated, Dimensions } f
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from './commonStyles';
 import i18n from './i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect } from 'react';
+
 
 
 const { width, height } = Dimensions.get("window");
@@ -15,6 +18,28 @@ const OnBoarding = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const[language,setLanguage]=useState( i18n.locale);
+
+const [initialSlide, setInitialSlide] = useState(0);
+
+// Читаем прогресс при первом запуске
+useEffect(() => {
+  const loadProgress = async () => {
+    try {
+      const savedIndex = await AsyncStorage.getItem('onboardingIndex');
+      if (savedIndex !== null) {
+        setInitialSlide(Number(savedIndex));
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({ index: Number(savedIndex), animated: false });
+        }, 0); // Ждём монтирования
+      }
+    } catch (e) {
+      console.error('Ошибка загрузки прогресса онбординга:', e);
+    }
+  };
+
+  loadProgress();
+}, []);
+
 
 const toggleLanguage=()=>{
   const newLanguage=language==='ru'?'en':'ru';
@@ -73,6 +98,8 @@ const slides= [
   const handleViewableItemsChanged = useRef(({ viewableItems }) => {
     const index = viewableItems[0]?.index || 0;
     setCurrentIndex(index);
+    // Сохраняем текущий слайд
+  AsyncStorage.setItem('onboardingIndex', index.toString());
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 0,
